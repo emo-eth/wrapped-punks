@@ -4,3 +4,6 @@
 [submodule "lib/solady"]
 	path = lib/solady
 	url = https://github.com/vectorized/solady
+[submodule "lib/sol-json"]
+	path = lib/sol-json
+	url = https://github.com/jameswenzel/sol-json

@@ -1,6 +1,6 @@
 pragma solidity ^0.8.10;
 
-interface CryptopunksData {
+interface ICryptoPunksData {
     function addAsset(uint8 index, bytes memory encoding, string memory name) external;
     function addComposites(
         uint64 key1,
@@ -19,4 +19,3 @@ interface CryptopunksData {
     function sealContract() external;
     function setPalette(bytes memory _palette) external;
 }
-

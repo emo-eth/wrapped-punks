@@ -1,6 +1,6 @@
 pragma solidity ^0.8.10;
 
-interface CryptoPunksMarket {
+interface ICryptoPunks {
     event Assign(address indexed to, uint256 punkIndex);
     event PunkBidEntered(uint256 indexed punkIndex, uint256 value, address indexed fromAddress);
     event PunkBidWithdrawn(uint256 indexed punkIndex, uint256 value, address indexed fromAddress);
@@ -40,4 +40,3 @@ interface CryptoPunksMarket {
     function withdraw() external;
     function withdrawBidForPunk(uint256 punkIndex) external;
 }
-
