@@ -7,6 +7,11 @@ import {ERC721} from "solady/tokens/ERC721.sol";
 import {Base64} from "solady/utils/Base64.sol";
 import {LibString} from "solady/utils/LibString.sol";
 
+/**
+ * @title  PunksWrapperMetadata
+ * @author James Wenzel (emo.eth)
+ * @notice Abstract contract to fetch and format metadata for wrapped Punks.
+ */
 abstract contract PunksWrapperMetadata is ERC721 {
     using LibString for string;
     using LibString for uint256;
