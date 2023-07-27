@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import {ICryptoPunks} from "./interfaces/ICryptoPunks.sol";
 import {PunksWrapperMetadata} from "./PunksWrapperMetadata.sol";
-import {ICryptoPunks} from "./ICryptoPunks.sol";
 
 /**
  * @title  PunksWrapper
@@ -11,6 +11,7 @@ import {ICryptoPunks} from "./ICryptoPunks.sol";
  *         Uses the CryptopunksData contract to fetch metadata for the wrapped Punks fully onchain.
  */
 contract PunksWrapper is PunksWrapperMetadata {
+    ///@dev Used when a user attempts to wrap a punk they do not own.
     error NotPunkOwner();
 
     ICryptoPunks public constant PUNKS = ICryptoPunks(0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB);

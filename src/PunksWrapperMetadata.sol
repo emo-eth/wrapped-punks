@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC721} from "solady/tokens/ERC721.sol";
-import {ICryptoPunksData} from "./ICryptoPunksData.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {ICryptoPunksData} from "./interfaces/ICryptoPunksData.sol";
 import {json} from "sol-json/json.sol";
+import {ERC721} from "solady/tokens/ERC721.sol";
 import {Base64} from "solady/utils/Base64.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 abstract contract PunksWrapperMetadata is ERC721 {
     using LibString for string;

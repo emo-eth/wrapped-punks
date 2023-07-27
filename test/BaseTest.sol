@@ -3,9 +3,12 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {PunksWrapper} from "src/PunksWrapper.sol";
-import {ICryptoPunks} from "src/ICryptoPunks.sol";
+import {ICryptoPunks} from "src/interfaces/ICryptoPunks.sol";
 
 contract PunksWrapperHelper is PunksWrapper {
+    /**
+     * @dev expose internal method for testing
+     */
     function getStringURI(uint256 tokenId) public view returns (string memory) {
         return stringURI(tokenId);
     }
@@ -16,6 +19,7 @@ contract BaseTest is Test {
     ICryptoPunks punks;
 
     function setUp() public virtual {
+        // specifying a fork block allows forge to cache rpc requests which greatly speeds up local tests
         vm.createSelectFork(vm.rpcUrl("mainnet"), 17781059);
 
         test = new PunksWrapperHelper();
