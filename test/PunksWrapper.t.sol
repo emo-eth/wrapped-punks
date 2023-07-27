@@ -3,19 +3,10 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {PunksWrapper} from "src/PunksWrapper.sol";
-import {ICryptoPunks} from "src/ICryptoPunks.sol";
 import {ERC721} from "solady/tokens/ERC721.sol";
+import {BaseTest} from "./BaseTest.sol";
 
-contract PunksWrapperTest is Test {
-    PunksWrapper test;
-    ICryptoPunks punks;
-
-    function setUp() public {
-        vm.createSelectFork(vm.rpcUrl("mainnet"), 17781059);
-        test = new PunksWrapper();
-        punks = test.PUNKS();
-    }
-
+contract PunksWrapperTest is BaseTest {
     function testWrapPunk() public {
         address owner = approvePunk(1234);
         vm.prank(owner);
@@ -69,18 +60,5 @@ contract PunksWrapperTest is Test {
         wrapPunk(1234);
         vm.expectRevert(ERC721.NotOwnerNorApproved.selector);
         test.unwrapPunk(1234, address(this));
-    }
-
-    function wrapPunk(uint256 punkId) internal returns (address) {
-        address owner = approvePunk(punkId);
-        vm.prank(owner);
-        test.wrapPunk(punkId);
-        return owner;
-    }
-
-    function approvePunk(uint256 punkIndex) internal returns (address owner) {
-        owner = punks.punkIndexToAddress(punkIndex);
-        vm.prank(owner);
-        punks.offerPunkForSaleToAddress(punkIndex, 0, address(test));
     }
 }

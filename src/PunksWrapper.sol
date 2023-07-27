@@ -4,6 +4,12 @@ pragma solidity ^0.8.17;
 import {PunksWrapperMetadata} from "./PunksWrapperMetadata.sol";
 import {ICryptoPunks} from "./ICryptoPunks.sol";
 
+/**
+ * @title  PunksWrapper
+ * @author James Wenzel (emo.eth)
+ * @notice ERC721 wrapper for CryptoPunks. Uses 0-ether private sales as a form of "approval" to more safely wrap Punks.
+ *         Uses the CryptopunksData contract to fetch metadata for the wrapped Punks fully onchain.
+ */
 contract PunksWrapper is PunksWrapperMetadata {
     error NotPunkOwner();
 
@@ -19,7 +25,9 @@ contract PunksWrapper is PunksWrapperMetadata {
 
     /**
      * @notice Wrap a CryptoPunk. Requires that the user has set a 0-ether private sale for the wrapper contract by
-     *         calling offerPunkForSaleToAddress(punkIndex, 0, address(this)) before wrapping
+     *         calling offerPunkForSaleToAddress(punkIndex, 0, address(this)) before wrapping. Users should take care
+     *         to validate that the address they are creating the private sale for is the address of the wrapper and not
+     *         a phishing scam.
      * @param punkIndex The index of the punk to wrap
      */
     function wrapPunk(uint256 punkIndex) public {

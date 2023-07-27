@@ -5,6 +5,7 @@ import {ERC721} from "solady/tokens/ERC721.sol";
 import {ICryptoPunksData} from "./ICryptoPunksData.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {json} from "sol-json/json.sol";
+import {Base64} from "solady/utils/Base64.sol";
 
 abstract contract PunksWrapperMetadata is ERC721 {
     using LibString for string;
@@ -13,6 +14,10 @@ abstract contract PunksWrapperMetadata is ERC721 {
     ICryptoPunksData public constant PUNKS_DATA = ICryptoPunksData(0x16F5A35647D6F03D5D3da7b35409D65ba03aF3B2);
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return string.concat("data:application/json;utf8,", Base64.encode(bytes(stringURI(tokenId))));
+    }
+
+    function stringURI(uint256 tokenId) internal view returns (string memory) {
         if (!_exists(tokenId)) {
             revert TokenDoesNotExist();
         }
@@ -27,7 +32,7 @@ abstract contract PunksWrapperMetadata is ERC721 {
     }
 
     function parseAttributesArray(string memory attributes) internal pure returns (string memory parsed) {
-        string[] memory individualTraits = attributes.split(string(","));
+        string[] memory individualTraits = attributes.split(string(", "));
 
         uint256 count = individualTraits.length - 1;
         string[] memory attributesArray = new string[](individualTraits.length + 1);
