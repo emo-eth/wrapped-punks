@@ -22,7 +22,7 @@ abstract contract PunksWrapperMetadata is ERC721 {
      * @inheritdoc ERC721
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return string.concat("data:application/json;utf8,", Base64.encode(bytes(stringURI(tokenId))));
+        return string.concat("data:application/json;base64", Base64.encode(bytes(stringURI(tokenId))));
     }
 
     /**
