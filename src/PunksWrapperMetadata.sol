@@ -13,10 +13,17 @@ abstract contract PunksWrapperMetadata is ERC721 {
 
     ICryptoPunksData public constant PUNKS_DATA = ICryptoPunksData(0x16F5A35647D6F03D5D3da7b35409D65ba03aF3B2);
 
+    /**
+     * @inheritdoc ERC721
+     */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         return string.concat("data:application/json;utf8,", Base64.encode(bytes(stringURI(tokenId))));
     }
 
+    /**
+     * @dev Returns the string URI for a given token ID.
+     * @param tokenId The index of the punk to get the URI for
+     */
     function stringURI(uint256 tokenId) internal view returns (string memory) {
         if (!_exists(tokenId)) {
             revert TokenDoesNotExist();
@@ -31,6 +38,11 @@ abstract contract PunksWrapperMetadata is ERC721 {
         );
     }
 
+    /**
+     * @dev Parse a comma-separated list of attributes into a JSON array of attributes. Also calculates and appends an
+     *      "Attribute Count" attribute.
+     * @param attributes The attributes string to parse
+     */
     function parseAttributesArray(string memory attributes) internal pure returns (string memory parsed) {
         string[] memory individualTraits = attributes.split(string(", "));
 
@@ -52,6 +64,9 @@ abstract contract PunksWrapperMetadata is ERC721 {
         return json.array(parsed);
     }
 
+    /**
+     * @dev Create a single attribute JSON object.
+     */
     function createAttribute(string memory trait, string memory value) internal pure returns (string memory) {
         return json.object(string.concat(json.property("trait_type", trait), ",", json.property("value", value)));
     }
