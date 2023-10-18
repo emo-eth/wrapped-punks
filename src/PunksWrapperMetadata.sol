@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import {ICryptoPunksData} from "./interfaces/ICryptoPunksData.sol";
 import {json} from "sol-json/json.sol";
-import {ERC721} from "solady/tokens/ERC721.sol";
 import {Base64} from "solady/utils/Base64.sol";
 import {LibString} from "solady/utils/LibString.sol";
 
@@ -12,25 +11,14 @@ import {LibString} from "solady/utils/LibString.sol";
  * @author James Wenzel (emo.eth)
  * @notice Abstract contract to fetch and format metadata for wrapped Punks.
  */
-abstract contract PunksWrapperMetadata is ERC721 {
+abstract contract PunksWrapperMetadata {
     ICryptoPunksData public constant PUNKS_DATA = ICryptoPunksData(0x16F5A35647D6F03D5D3da7b35409D65ba03aF3B2);
-
-    /**
-     * @inheritdoc ERC721
-     */
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return string.concat("data:application/json;base64,", Base64.encode(bytes(stringURI(tokenId))));
-    }
 
     /**
      * @dev Returns the string URI for a given token ID.
      * @param tokenId The index of the punk to get the URI for
      */
     function stringURI(uint256 tokenId) internal view returns (string memory) {
-        // todo: defy the spec so all punks' metadata is available?
-        if (!_exists(tokenId)) {
-            revert TokenDoesNotExist();
-        }
         uint16 punkIndex = uint16(tokenId);
         string memory imageData = PUNKS_DATA.punkImageSvg(punkIndex);
         imageData = LibString.slice(imageData, 24);
@@ -55,12 +43,16 @@ abstract contract PunksWrapperMetadata is ERC721 {
     function parseAttributesArray(string memory attributes) internal pure returns (string memory parsed) {
         string[] memory individualTraits = LibString.split(attributes, string(", "));
         bytes1 firstChar = bytes(individualTraits[0])[0];
+        // only humans have skin tones, and their "type" always starts with M or F
         bool isHuman = firstChar == "M" || firstChar == "F";
         string[] memory attributesArray;
+        // placeholder if human
+        string[] memory typeAndSkinToneIfHuman;
         if (isHuman) {
             // include an extra attribute for "Attribute Count" and an extra for "Skin Tone"
             attributesArray = new string[](individualTraits.length + 2);
-            attributesArray[0] = createAttribute("Type", LibString.split(individualTraits[0], " ")[0]);
+            typeAndSkinToneIfHuman = LibString.split(individualTraits[0], " ");
+            attributesArray[0] = createAttribute("Type", typeAndSkinToneIfHuman[0]);
         } else {
             attributesArray = new string[](individualTraits.length + 1);
             attributesArray[0] = createAttribute("Type", individualTraits[0]);
@@ -80,8 +72,7 @@ abstract contract PunksWrapperMetadata is ERC721 {
 
         if (isHuman) {
             // add "Skin Tone" meta-attribute
-            attributesArray[individualTraits.length + 1] =
-                createAttribute("Skin Tone", LibString.split(individualTraits[0], " ")[1]);
+            attributesArray[individualTraits.length + 1] = createAttribute("Skin Tone", typeAndSkinToneIfHuman[1]);
         }
 
         // concat all attributes into a single JSON array

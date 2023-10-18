@@ -69,4 +69,11 @@ contract PunksWrapperTest is BaseTest {
     function testSymbol() public {
         assertEq(test.symbol(), unicode"WϾ");
     }
+
+    function testTokenDoesNotExist() public {
+        // should pass for valid but non-wrapped tokens
+        test.tokenURI(1);
+        vm.expectRevert(ERC721.TokenDoesNotExist.selector);
+        test.tokenURI(10000);
+    }
 }

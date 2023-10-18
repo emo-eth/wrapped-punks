@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 import {ICryptoPunks} from "./interfaces/ICryptoPunks.sol";
 import {PunksWrapperMetadata} from "./PunksWrapperMetadata.sol";
+import {ERC721} from "solady/tokens/ERC721.sol";
+import {Base64} from "solady/utils/Base64.sol";
 
 /**
  * @title  PunksWrapper
@@ -10,7 +12,7 @@ import {PunksWrapperMetadata} from "./PunksWrapperMetadata.sol";
  * @notice ERC721 wrapper for CryptoPunks. Uses 0-ether private sales as a form of "approval" to more safely wrap Punks.
  *         Uses the CryptopunksData contract to fetch metadata for the wrapped Punks fully onchain.
  */
-contract PunksWrapper is PunksWrapperMetadata {
+contract PunksWrapper is ERC721, PunksWrapperMetadata {
     ///@dev Used when a user attempts to wrap a punk they do not own.
     error NotPunkOwner();
 
@@ -22,6 +24,17 @@ contract PunksWrapper is PunksWrapperMetadata {
 
     function symbol() public pure override returns (string memory) {
         return unicode"WϾ";
+    }
+
+    /**
+     * @inheritdoc ERC721
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        // allow retrieving metadata for all valid wrapped punks, even if not (currently) wrapped
+        if (tokenId >= 10000) {
+            revert TokenDoesNotExist();
+        }
+        return string.concat("data:application/json;base64,", Base64.encode(bytes(stringURI(tokenId))));
     }
 
     /**
