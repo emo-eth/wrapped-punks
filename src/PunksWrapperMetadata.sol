@@ -13,16 +13,13 @@ import {LibString} from "solady/utils/LibString.sol";
  * @notice Abstract contract to fetch and format metadata for wrapped Punks.
  */
 abstract contract PunksWrapperMetadata is ERC721 {
-    using LibString for string;
-    using LibString for uint256;
-
     ICryptoPunksData public constant PUNKS_DATA = ICryptoPunksData(0x16F5A35647D6F03D5D3da7b35409D65ba03aF3B2);
 
     /**
      * @inheritdoc ERC721
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return string.concat("data:application/json;base64", Base64.encode(bytes(stringURI(tokenId))));
+        return string.concat("data:application/json;base64,", Base64.encode(bytes(stringURI(tokenId))));
     }
 
     /**
@@ -30,16 +27,23 @@ abstract contract PunksWrapperMetadata is ERC721 {
      * @param tokenId The index of the punk to get the URI for
      */
     function stringURI(uint256 tokenId) internal view returns (string memory) {
+        // todo: defy the spec so all punks' metadata is available?
         if (!_exists(tokenId)) {
             revert TokenDoesNotExist();
         }
         uint16 punkIndex = uint16(tokenId);
         string memory imageData = PUNKS_DATA.punkImageSvg(punkIndex);
+        imageData = LibString.slice(imageData, 24);
+
         string memory attributes = PUNKS_DATA.punkAttributes(punkIndex);
 
         attributes = parseAttributesArray(attributes);
         return json.object(
-            string.concat(json.property("image", imageData), ",", json.rawProperty("attributes", attributes))
+            string.concat(
+                json.property("image", string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(imageData)))),
+                ",",
+                json.rawProperty("attributes", attributes)
+            )
         );
     }
 
@@ -49,24 +53,39 @@ abstract contract PunksWrapperMetadata is ERC721 {
      * @param attributes The attributes string to parse
      */
     function parseAttributesArray(string memory attributes) internal pure returns (string memory parsed) {
-        string[] memory individualTraits = attributes.split(string(", "));
-
+        string[] memory individualTraits = LibString.split(attributes, string(", "));
+        bytes1 firstChar = bytes(individualTraits[0])[0];
+        bool isHuman = firstChar == "M" || firstChar == "F";
+        string[] memory attributesArray;
+        if (isHuman) {
+            // include an extra attribute for "Attribute Count" and an extra for "Skin Tone"
+            attributesArray = new string[](individualTraits.length + 2);
+            attributesArray[0] = createAttribute("Type", LibString.split(individualTraits[0], " ")[0]);
+        } else {
+            attributesArray = new string[](individualTraits.length + 1);
+            attributesArray[0] = createAttribute("Type", individualTraits[0]);
+        }
+        // "type" is not traditionally counted in the attribute count, nor is skin tone
         uint256 count = individualTraits.length - 1;
-        string[] memory attributesArray = new string[](individualTraits.length + 1);
-        attributesArray[0] = createAttribute("Type", individualTraits[0]);
-        string memory trait = "Accessory";
+
+        // cryptopunks website refers to remaining attributes just as "Attributes" (versus OpenSea's "Accessories")
+        string memory trait = "Attribute";
+        // start at 1 to skip "Type"; iterate over remaining attributes, if any
         for (uint256 i = 1; i < individualTraits.length; i++) {
             attributesArray[i] = createAttribute(trait, individualTraits[i]);
         }
-        attributesArray[individualTraits.length] = createAttribute("Attribute Count", count.toString());
 
-        for (uint256 i; i < attributesArray.length; i++) {
-            parsed = string.concat(parsed, attributesArray[i]);
-            if (i != attributesArray.length - 1) {
-                parsed = string.concat(parsed, ",");
-            }
+        // add "Attribute Count" meta-attribute
+        attributesArray[individualTraits.length] = createAttribute("Attribute Count", LibString.toString(count));
+
+        if (isHuman) {
+            // add "Skin Tone" meta-attribute
+            attributesArray[individualTraits.length + 1] =
+                createAttribute("Skin Tone", LibString.split(individualTraits[0], " ")[1]);
         }
-        return json.array(parsed);
+
+        // concat all attributes into a single JSON array
+        return json.arrayOf(attributesArray);
     }
 
     /**

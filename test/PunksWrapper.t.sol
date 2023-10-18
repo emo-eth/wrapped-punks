@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {PunksWrapper} from "src/PunksWrapper.sol";
 import {ERC721} from "solady/tokens/ERC721.sol";
-import {BaseTest} from "./BaseTest.sol";
+import {BaseTest} from "./BaseTest.t.sol";
 
 contract PunksWrapperTest is BaseTest {
     function testWrapPunk() public {
@@ -60,5 +60,13 @@ contract PunksWrapperTest is BaseTest {
         wrapPunk(1234);
         vm.expectRevert(ERC721.NotOwnerNorApproved.selector);
         test.unwrapPunk(1234, address(this));
+    }
+
+    function testName() public {
+        assertEq(test.name(), "Wrapped CryptoPunks");
+    }
+
+    function testSymbol() public {
+        assertEq(test.symbol(), unicode"WϾ");
     }
 }

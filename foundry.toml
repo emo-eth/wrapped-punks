@@ -5,7 +5,6 @@ out = "out"
 libs = ["lib"]
 remappings = ['solady/=lib/solady/src/', 'sol-json/=lib/sol-json/src/']
 evm_version = 'shanghai'
-cbor_metdata = false
 ipfs_hash = 'none'
 
 [rpc_endpoints]
